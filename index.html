@@ -13,19 +13,19 @@
     }
     h1, h2, h3 { margin-top: 0; }
 
-    /* Tabs */
-    .tabs {
+    /* ===================== Tabs ===================== */
+    .tabbar {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     .tab {
-      padding: 10px 15px;
+      padding: 8px 14px;
       background: #222;
       border: 1px solid #444;
       border-radius: 6px;
       cursor: pointer;
-      color: #ccc;
+      color: #ddd;
       user-select: none;
     }
     .tab.active {
@@ -34,10 +34,11 @@
       color: white;
     }
 
-    /* Page layout */
+    /* ===================== Pages ===================== */
     .page { display: none; }
     .page.active { display: block; }
 
+    /* ===================== UI Boxes ===================== */
     .box {
       background: #1a1a1a;
       border: 1px solid #333;
@@ -49,7 +50,7 @@
     input, select, textarea {
       width: 100%;
       padding: 7px;
-      margin: 5px 0;
+      margin: 5px 0 10px 0;
       background: #222;
       color: #eee;
       border: 1px solid #444;
@@ -69,48 +70,59 @@
     button.red { background: #c0392b; }
     button.yellow { background: #d4ac0d; color:#000; }
 
+    /* ===================== Ingredient Row ===================== */
     .row {
       display: flex;
       justify-content: space-between;
-      padding: 4px 0;
+      align-items: center;
+      margin: 3px 0;
+      padding: 4px;
     }
 
-    /* Collapsible tree for recipe view */
-    .node {
-      margin-left: 15px;
-      padding-left: 10px;
-      border-left: 1px solid #444;
-    }
-    .node-title {
+    /* Small square X button */
+    .xbtn {
+      background: #c0392b;
+      border: 1px solid #922b21;
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      font-weight: bold;
       cursor: pointer;
-      user-select: none;
-      margin: 4px 0;
+      text-align: center;
+      line-height: 20px;
     }
-    .collapsed .node-children {
-      display: none;
-    }
+
+    /* ===================== Tree View ===================== */
+    .node { margin-left: 12px; }
+    .node-title { cursor: pointer; font-weight: bold; margin: 4px 0; }
+    .collapsed .node-children { display:none; }
   </style>
 </head>
 <body>
 
 <h1>SCP Chemistry Calculator</h1>
 
-<!-- Tabs -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('chemPage', this)">Chemicals</div>
-  <div class="tab" onclick="switchTab('recipesPage', this)">Recipes</div>
-  <div class="tab" onclick="switchTab('batchPage', this)">Batch Calc</div>
-  <div class="tab" onclick="switchTab('profitPage', this)">Profit</div>
-  <div class="tab" onclick="switchTab('importPage', this)">Import/Export</div>
-  <div class="tab" onclick="switchTab('settingsPage', this)">Settings</div>
+<!-- ============================================================
+     TABS
+============================================================ -->
+<div class="tabbar">
+  <div class="tab active" onclick="showPage('page-chems', this)">Chemicals</div>
+  <div class="tab" onclick="showPage('page-builder', this)">Recipe Builder</div>
+  <div class="tab" onclick="showPage('page-recipes', this)">Recipes</div>
+  <div class="tab" onclick="showPage('page-viewer', this)">Recipe Viewer</div>
+  <div class="tab" onclick="showPage('page-batch', this)">Batch Calc</div>
+  <div class="tab" onclick="showPage('page-profit', this)">Profit</div>
+  <div class="tab" onclick="showPage('page-key', this)">Key</div>
 </div>
 
 <!-- ============================================================
      PAGE: CHEMICALS
 ============================================================ -->
-<div class="page active" id="chemPage">
+<div id="page-chems" class="page active">
+  <h2>Chemicals</h2>
+
   <div class="box">
-    <h3>Add Chemical</h3>
     <input id="chemName" placeholder="Chemical Name">
     <input id="chemPrice" type="number" placeholder="Price per Liter">
     <button onclick="addChemical()">Add Chemical</button>
@@ -123,268 +135,318 @@
 </div>
 
 <!-- ============================================================
-     PAGE: RECIPES
+     PAGE: RECIPE BUILDER
 ============================================================ -->
-<div class="page" id="recipesPage">
+<div id="page-builder" class="page">
+  <h2>Create Recipe</h2>
 
   <div class="box">
-    <h3>Create Recipe</h3>
-
-    <input id="recipeName" placeholder="Recipe Name">
-    <input id="recipeYield" type="number" placeholder="Yield % (e.g. 24.8)">
-
-    <select id="ingredientSelect"></select>
-    <button onclick="addIngredient()">Add Ingredient</button>
-
-    <div id="ingredientList"></div>
-
-    <button onclick="saveRecipe()">Save Recipe</button>
+    <input id="builderRecipeName" placeholder="Recipe Name">
+    <input id="builderRecipeYield" type="number" placeholder="Yield % (e.g. 24.8)">
   </div>
 
   <div class="box">
-    <h3>Saved Recipes</h3>
-    <div id="savedRecipeList"></div>
-  </div>
+    <h3>Add Ingredient</h3>
+    <select id="builderChemSelect"></select>
+    <button onclick="builderAddIngredient()">Add Ingredient</button>
 
+    <h3>Ingredients</h3>
+    <div id="builderList"></div>
+
+    <button onclick="saveNewRecipe()">Save Recipe</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: SAVED RECIPES
+============================================================ -->
+<div id="page-recipes" class="page">
+  <h2>Saved Recipes</h2>
+  <div id="savedRecipesList"></div>
+</div>
+
+<!-- ============================================================
+     PAGE: VIEW RECIPE TREE
+============================================================ -->
+<div id="page-viewer" class="page">
+  <h2>Recipe Viewer</h2>
+
+  <select id="recipeViewSelect" onchange="viewRecipe()"></select>
+
+  <div id="recipeViewBox" style="margin-top:15px;"></div>
 </div>
 
 <!-- ============================================================
      PAGE: BATCH CALCULATOR
 ============================================================ -->
-<div class="page" id="batchPage">
-  <div class="box">
-    <h3>Batch Requirement Calculator</h3>
+<div id="page-batch" class="page">
+  <h2>Batch Calculator</h2>
 
-    <select id="batchSelect"></select>
-    <input id="batchLiters" type="number" placeholder="Desired Output (L)">
-    <button onclick="calcBatch()">Calculate</button>
+  <select id="batchChemSelect"></select>
+  <input id="batchLiters" type="number" placeholder="Desired Output Liters">
 
-    <div id="batchOutput"></div>
-  </div>
+  <button onclick="calcBatch()">Calculate</button>
+
+  <div id="batchOutput" style="margin-top:15px;"></div>
 </div>
 
 <!-- ============================================================
-     PAGE: PROFIT
+     PAGE: PROFIT CALC
 ============================================================ -->
-<div class="page" id="profitPage">
-  <div class="box">
-    <h3>Profit Calculator</h3>
+<div id="page-profit" class="page">
+  <h2>Profit Calculator</h2>
 
-    <select id="profitSelect"></select>
-    <input id="profitSale" type="number" placeholder="Sale Price per L">
+  <select id="profitChemSelect"></select>
+  <input id="profitSalePrice" type="number" placeholder="Sale Price per Liter">
 
-    <button onclick="calcProfit()">Calculate</button>
+  <button onclick="calcProfit()">Calculate</button>
 
-    <div id="profitOutput"></div>
-  </div>
+  <div id="profitOutput" style="margin-top:10px;"></div>
 </div>
 
 <!-- ============================================================
      PAGE: IMPORT / EXPORT
 ============================================================ -->
-<div class="page" id="importPage">
-  <div class="box">
-    <h3>Export Data</h3>
-    <button onclick="exportKey()">Generate Key</button>
-    <textarea id="exportBox" style="height:80px;"></textarea>
-  </div>
+<div id="page-key" class="page">
+  <h2>Export / Import Key</h2>
 
-  <div class="box">
-    <h3>Import Data</h3>
-    <textarea id="importBox" style="height:80px;"></textarea>
-    <button onclick="importKey()">Import Key</button>
-  </div>
+  <button onclick="exportKey()">Export Key</button>
+  <textarea id="exportBox" style="height:80px"></textarea>
+
+  <textarea id="importBox" placeholder="Paste key" style="height:80px"></textarea>
+  <button onclick="importKey()">Import</button>
 </div>
 
-<!-- ============================================================
-     PAGE: SETTINGS
-============================================================ -->
-<div class="page" id="settingsPage">
-  <div class="box">
-    <h3>Reset Everything</h3>
-    <button class="red" onclick="resetAll()">CLEAR ALL DATA</button>
-  </div>
-</div>
-
-<!-- ============================================================
-     SCRIPT
-============================================================ -->
+<!-- ========================== SCRIPT ========================== -->
 <script>
 
+/* ================= GLOBAL VARIABLES ================= */
 let prices = {};
 let savedRecipes = {};
-let builder = [];
+let recipeBuilder = [];
 
-/* ============================
-   TAB SWITCHING
-============================ */
-function switchTab(id, elem) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+/* ================= TAB SWITCHING ================= */
+function showPage(id, tabBtn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  elem.classList.add('active');
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tabBtn.classList.add("active");
 }
 
-/* ============================
-   CHEMICALS
-============================ */
+/* ================= REFRESH ALL UI ================= */
+function refreshAll() {
+  refreshChemicalList();
+  refreshRecipeLists();
+  refreshDropdowns();
+}
+
+/* ================= CHEMICALS ================= */
 function addChemical() {
-  const name = chemName.value.trim().toLowerCase();
-  const price = parseFloat(chemPrice.value);
+  let name = document.getElementById("chemName").value.trim().toLowerCase();
+  let price = parseFloat(document.getElementById("chemPrice").value);
 
   if (!name || isNaN(price)) return;
 
   prices[name] = price;
 
-  chemName.value = "";
-  chemPrice.value = "";
+  document.getElementById("chemName").value = "";
+  document.getElementById("chemPrice").value = "";
 
-  refreshUI();
+  refreshAll();
 }
 
-function editChemical(name) {
-  const newPrice = parseFloat(prompt("New price:", prices[name]));
-  if (!isNaN(newPrice)) {
-    prices[name] = newPrice;
-    refreshUI();
-  }
-}
+function refreshChemicalList() {
+  const box = document.getElementById("chemList");
+  box.innerHTML = "";
 
-function deleteChemical(name) {
-  if (!confirm("Delete chemical " + name + "?")) return;
-  delete prices[name];
-  refreshUI();
-}
-
-/* ============================
-   RECIPE BUILDER
-============================ */
-function addIngredient() {
-  const name = ingredientSelect.value;
-  if (!name) return;
-
-  builder.push({ name, liters: 0 });
-  refreshBuilderList();
-}
-
-function refreshBuilderList() {
-  ingredientList.innerHTML = "";
-  builder.forEach((i, idx) => {
-    ingredientList.innerHTML += `
+  Object.keys(prices).forEach(name => {
+    box.innerHTML += `
       <div class="row">
-        <div>${i.name}: 
-          <input type="number" value="${i.liters}" 
-            onchange="builder[${idx}].liters=parseFloat(this.value)||0">
-        </div>
-        <button class="red" onclick="builder.splice(${idx},1); refreshBuilderList();">X</button>
+        <div>${name} — $${prices[name].toFixed(2)}/L</div>
+        <button class="xbtn" onclick="deleteChemical('${name}')">X</button>
       </div>
     `;
   });
 }
 
-function saveRecipe() {
-  const name = recipeName.value.trim().toLowerCase();
-  let yieldVal = parseFloat(recipeYield.value);
+function deleteChemical(name) {
+  if (!confirm(`Delete chemical ${name}?`)) return;
+  delete prices[name];
+  refreshAll();
+}
 
-  if (!name || builder.length === 0) return;
+/* ================= RECIPE BUILDER ================= */
+function builderAddIngredient() {
+  const name = document.getElementById("builderChemSelect").value;
+  if (!name) return;
+
+  recipeBuilder.push({ name, liters: 0 });
+  updateBuilderList();
+}
+
+function updateBuilderList() {
+  const box = document.getElementById("builderList");
+  box.innerHTML = "";
+
+  recipeBuilder.forEach((i, idx) => {
+    box.innerHTML += `
+      <div class="row">
+        <div>
+          <b>${i.name}</b>
+          <input type="number" value="${i.liters}"
+            onchange="recipeBuilder[${idx}].liters = parseFloat(this.value)||0">
+        </div>
+        <button class="xbtn" onclick="removeBuilderIngredient(${idx})">X</button>
+      </div>
+    `;
+  });
+}
+
+function removeBuilderIngredient(idx) {
+  recipeBuilder.splice(idx, 1);
+  updateBuilderList();
+}
+
+function saveNewRecipe() {
+  const name = document.getElementById("builderRecipeName").value.trim().toLowerCase();
+  let yieldVal = parseFloat(document.getElementById("builderRecipeYield").value);
+
+  if (!name || recipeBuilder.length === 0) return;
   if (isNaN(yieldVal)) yieldVal = 100;
 
   savedRecipes[name] = {
     yield: yieldVal,
-    ingredients: JSON.parse(JSON.stringify(builder))
+    ingredients: JSON.parse(JSON.stringify(recipeBuilder))
   };
 
-  builder = [];
-  recipeName.value = "";
-  recipeYield.value = "";
-  refreshBuilderList();
-
   calculateRecipePrice(name);
-  refreshUI();
+
+  recipeBuilder = [];
+  updateBuilderList();
+  document.getElementById("builderRecipeName").value = "";
+  document.getElementById("builderRecipeYield").value = "";
+
+  refreshAll();
 }
 
+/* ================= CALCULATE RECIPE PRICE ================= */
 function calculateRecipePrice(name) {
-  const rec = savedRecipes[name];
-  const expanded = expandRecipe(name, 1);
-  const costPerL = expanded.output > 0 ? expanded.cost / expanded.output : 0;
-  prices[name] = costPerL;
+  const { outputLiters, totalCost } = expandRecipe(name, 1);
+  prices[name] = outputLiters > 0 ? totalCost / outputLiters : 0;
 }
 
-/* ============================
-   EXPAND RECIPE (NESTED)
-============================ */
+/* ================= EXPAND RECIPE ================= */
 function expandRecipe(name, batches) {
   const rec = savedRecipes[name];
-  if (!rec) return { output: 0, cost: 0 };
+  if (!rec) return { outputLiters: 0, totalCost: 0 };
 
-  let input = 0;
+  let inputLit = 0;
   let cost = 0;
 
-  for (const ing of rec.ingredients) {
-    const need = ing.liters * batches;
+  for (let ing of rec.ingredients) {
+    let need = ing.liters * batches;
 
     if (savedRecipes[ing.name]) {
-      const nested = expandRecipe(ing.name, need);
-      input += nested.output;
-      cost += nested.cost;
+      let nested = expandRecipe(ing.name, need);
+      inputLit += nested.outputLiters;
+      cost += nested.totalCost;
     } else {
-      input += need;
+      inputLit += need;
       cost += (prices[ing.name] || 0) * need;
     }
   }
 
-  const output = input * (rec.yield / 100);
-  return { output, cost };
+  return {
+    outputLiters: inputLit * (rec.yield / 100),
+    totalCost: cost
+  };
 }
 
-/* ============================
-   RECIPE LIST / EDIT / DELETE
-============================ */
-function editRecipe(name) {
-  const rec = savedRecipes[name];
-  const newYield = parseFloat(prompt("New Yield %:", rec.yield));
-  if (!isNaN(newYield)) {
-    rec.yield = newYield;
-    calculateRecipePrice(name);
-    refreshUI();
-  }
+/* ================= VIEWER TREE ================= */
+function viewRecipe() {
+  const name = document.getElementById("recipeViewSelect").value;
+  const box = document.getElementById("recipeViewBox");
+
+  if (!name) { box.innerHTML = "Select a recipe."; return; }
+
+  box.innerHTML = buildTree(name);
+}
+
+function buildTree(name) {
+  const r = savedRecipes[name];
+
+  let { outputLiters, totalCost } = expandRecipe(name, 1);
+  let costL = totalCost / outputLiters;
+
+  let html = `
+    <div class="node">
+      <div class="node-title" onclick="this.parentElement.classList.toggle('collapsed')">
+        ▼ ${name} — Yield ${r.yield}% — $${costL.toFixed(2)}/L
+      </div>
+      <div class="node-children">
+  `;
+
+  r.ingredients.forEach(i => {
+    if (savedRecipes[i.name]) {
+      html += buildTree(i.name);
+    } else {
+      html += `<div class="node">• ${i.name}: ${i.liters} L</div>`;
+    }
+  });
+
+  return html + "</div></div>";
+}
+
+/* ================= SAVED RECIPE LIST ================= */
+function refreshRecipeLists() {
+  const box = document.getElementById("savedRecipesList");
+  box.innerHTML = "";
+
+  Object.keys(savedRecipes).forEach(name => {
+    box.innerHTML += `
+      <div class="row">
+        <div>${name} — Yield ${savedRecipes[name].yield}%</div>
+        <button class="xbtn" onclick="deleteRecipe('${name}')">X</button>
+      </div>
+    `;
+  });
 }
 
 function deleteRecipe(name) {
-  if (!confirm("Delete recipe " + name + "?")) return;
-
+  if (!confirm(`Delete recipe ${name}?`)) return;
   delete savedRecipes[name];
-  refreshUI();
+  refreshAll();
 }
 
-/* ============================
-   BATCH CALCULATOR
-============================ */
+/* ================= BATCH CALCULATOR ================= */
 function calcBatch() {
-  const name = batchSelect.value;
-  const desired = parseFloat(batchLiters.value);
-  if (!name || isNaN(desired)) return;
+  const name = document.getElementById("batchChemSelect").value;
+  const desired = parseFloat(document.getElementById("batchLiters").value);
+  const out = document.getElementById("batchOutput");
 
-  const one = expandRecipe(name, 1);
+  if (!name || !desired) { out.innerHTML = "Missing input."; return; }
 
-  const batches = desired / one.output;
+  const batch1 = expandRecipe(name, 1);
+  const batchesNeeded = desired / batch1.outputLiters;
 
-  let html = `<h3>${desired} L of ${name} requires:</h3><br>`;
-  html += listBatch(name, batches);
-  batchOutput.innerHTML = html;
+  let html = `<h3>${desired} L of ${name} requires:</h3>`;
+
+  html += expandBatch(name, batchesNeeded);
+
+  out.innerHTML = html;
 }
 
-function listBatch(name, batches) {
-  const rec = savedRecipes[name];
+function expandBatch(name, batches) {
   let html = "";
+  const rec = savedRecipes[name];
 
-  for (const ing of rec.ingredients) {
-    const total = ing.liters * batches;
+  for (let ing of rec.ingredients) {
+    let total = ing.liters * batches;
 
     if (savedRecipes[ing.name]) {
       html += `<div class="node">▼ ${ing.name}: ${total.toFixed(2)} L</div>`;
-      html += listBatch(ing.name, total);
+      html += expandBatch(ing.name, total);
     } else {
       html += `<div class="node">• ${ing.name}: ${total.toFixed(2)} L</div>`;
     }
@@ -393,101 +455,68 @@ function listBatch(name, batches) {
   return html;
 }
 
-/* ============================
-   PROFIT CALC
-============================ */
+/* ================= PROFIT CALC ================= */
 function calcProfit() {
-  const name = profitSelect.value;
-  const sale = parseFloat(profitSale.value);
-  if (!name || isNaN(sale)) return;
+  const name = document.getElementById("profitChemSelect").value;
+  const price = parseFloat(document.getElementById("profitSalePrice").value);
+  const box = document.getElementById("profitOutput");
 
-  const rec = expandRecipe(name, 1);
-  const cost = rec.cost / rec.output;
-  const profit = sale - cost;
+  if (!name || isNaN(price)) { box.innerHTML = "Missing input."; return; }
 
-  profitOutput.innerHTML = `
-    <div>Cost/L: $${cost.toFixed(2)}</div>
-    <div>Sale Price/L: $${sale.toFixed(2)}</div>
-    <div>Profit/L: $${profit.toFixed(2)}</div>
+  const r = expandRecipe(name, 1);
+
+  let costL = r.totalCost / r.outputLiters;
+  let profit = price - costL;
+
+  box.innerHTML = `
+    Cost/L: $${costL.toFixed(2)}<br>
+    Sale: $${price.toFixed(2)}<br>
+    Profit: $${profit.toFixed(2)}<br>
+    Margin: ${(profit/price*100).toFixed(1)}%
   `;
 }
 
-/* ============================
-   IMPORT / EXPORT KEY
-============================ */
+/* ================= IMPORT / EXPORT ================= */
 function exportKey() {
-  exportBox.value = btoa(JSON.stringify({ prices, savedRecipes }));
+  const key = btoa(JSON.stringify({ prices, savedRecipes }));
+  document.getElementById("exportBox").value = key;
 }
 
 function importKey() {
   try {
-    const data = JSON.parse(atob(importBox.value.trim()));
+    const raw = atob(document.getElementById("importBox").value.trim());
+    const data = JSON.parse(raw);
     prices = data.prices || {};
     savedRecipes = data.savedRecipes || {};
-    refreshUI();
-    alert("Loaded");
+    refreshAll();
+    alert("Key Loaded");
   } catch {
     alert("Invalid Key");
   }
 }
 
-/* ============================
-   RESET EVERYTHING
-============================ */
-function resetAll() {
-  if (!confirm("Really delete ALL data?")) return;
-  prices = {};
-  savedRecipes = {};
-  builder = [];
-  refreshUI();
+/* ================= DROPDOWNS ================= */
+function refreshDropdowns() {
+  const builder = document.getElementById("builderChemSelect");
+  const view = document.getElementById("recipeViewSelect");
+  const batch = document.getElementById("batchChemSelect");
+  const profit = document.getElementById("profitChemSelect");
+
+  builder.innerHTML = `<option value="">-- choose --</option>`;
+  Object.keys(prices).forEach(n => builder.innerHTML += `<option value="${n}">${n}</option>`);
+
+  view.innerHTML = `<option value="">-- choose --</option>`;
+  Object.keys(savedRecipes).forEach(n => view.innerHTML += `<option value="${n}">${n}</option>`);
+
+  batch.innerHTML = `<option value="">-- choose --</option>`;
+  Object.keys(savedRecipes).forEach(n => batch.innerHTML += `<option value="${n}">${n}</option>`);
+
+  profit.innerHTML = `<option value="">-- choose --</option>`;
+  Object.keys(savedRecipes).forEach(n => profit.innerHTML += `<option value="${n}">${n}</option>`);
 }
 
-/* ============================
-   REFRESH ALL UI
-============================ */
-function refreshUI() {
-
-  /* Refresh chemical list */
-  chemList.innerHTML = "";
-  Object.keys(prices).forEach(n => {
-    chemList.innerHTML += `
-      <div class="row">
-        <div>${n} — $${prices[n].toFixed(2)}/L</div>
-        <div>
-          <button class="yellow" onclick="editChemical('${n}')">Edit</button>
-          <button class="red" onclick="deleteChemical('${n}')">Delete</button>
-        </div>
-      </div>`;
-  });
-
-  /* Refresh ingredient dropdown */
-  ingredientSelect.innerHTML = '<option value="">-- choose --</option>';
-  Object.keys(prices).forEach(n => ingredientSelect.innerHTML += `<option>${n}</option>`);
-
-  /* Refresh saved recipe list */
-  savedRecipeList.innerHTML = "";
-  Object.keys(savedRecipes).forEach(r => {
-    savedRecipeList.innerHTML += `
-      <div class="row">
-        <div>${r} — Yield ${savedRecipes[r].yield}%</div>
-        <div>
-          <button class="yellow" onclick="editRecipe('${r}')">Edit</button>
-          <button class="red" onclick="deleteRecipe('${r}')">Delete</button>
-        </div>
-      </div>`;
-  });
-
-  /* Refresh Batch Calculator list */
-  batchSelect.innerHTML = '<option value="">-- choose --</option>';
-  Object.keys(savedRecipes).forEach(r => batchSelect.innerHTML += `<option>${r}</option>`);
-
-  /* Refresh Profit list */
-  profitSelect.innerHTML = '<option value="">-- choose --</option>';
-  Object.keys(savedRecipes).forEach(r => profitSelect.innerHTML += `<option>${r}</option>`);
-}
-
-/* Initialize */
-refreshUI();
+/* ================= INITIAL LOAD ================= */
+refreshAll();
 
 </script>
 
